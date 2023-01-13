@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import { container } from 'tsyringe';
 import { RolesService } from '../services/RolesService';
 
-export class RolesController {
+export class RoleController {
   async index(request: Request, response: Response): Promise<Response> {
     const rolesService = container.resolve(RolesService);
     const page =

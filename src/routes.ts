@@ -2,14 +2,34 @@ import { Router } from 'express';
 import { container } from 'tsyringe';
 import { celebrate, Joi, Segments } from 'celebrate';
 
-import { RolesController } from './app/controllers/RolesController';
+import { RoleController } from './app/controllers/RoleController';
+import { UserController } from './app/controllers/UserController';
+import { LoginController } from './app/controllers/LoginController';
+import { authMiddleware } from './middlewares/authMiddleware';
 
 export const routes = Router();
-const rolesController = container.resolve(RolesController);
+const roleController = container.resolve(RoleController);
+const userController = container.resolve(UserController);
+const loginController = container.resolve(LoginController);
 
 routes.get('/', (request, response) => {
   return response.json({ message: 'Hello World!' });
 });
+
+// Login
+
+routes.post(
+  '/users/login',
+  celebrate({
+    [Segments.BODY]: Joi.object().keys({
+      email: Joi.string().email().required(),
+      password: Joi.string().required(),
+    }),
+  }),
+  loginController.login,
+);
+
+routes.use(authMiddleware);
 
 routes.get(
   '/roles',
@@ -19,7 +39,7 @@ routes.get(
       limit: Joi.number(),
     }),
   }),
-  rolesController.index,
+  roleController.index,
 );
 
 routes.get(
@@ -29,7 +49,7 @@ routes.get(
       id: Joi.string().uuid().required(),
     }),
   }),
-  rolesController.getRole,
+  roleController.getRole,
 );
 
 routes.post(
@@ -39,7 +59,7 @@ routes.post(
       name: Joi.string().required(),
     }),
   }),
-  rolesController.store,
+  roleController.store,
 );
 
 routes.put(
@@ -52,7 +72,7 @@ routes.put(
       name: Joi.string().required(),
     }),
   }),
-  rolesController.update,
+  roleController.update,
 );
 
 routes.delete(
@@ -62,5 +82,32 @@ routes.delete(
       id: Joi.string().uuid().required(),
     }),
   }),
-  rolesController.delete,
+  roleController.delete,
+);
+
+// Users
+
+routes.post(
+  '/users',
+  celebrate({
+    [Segments.BODY]: Joi.object().keys({
+      name: Joi.string().required(),
+      email: Joi.string().email().required(),
+      password: Joi.string().required(),
+      isAdmin: Joi.boolean().required(),
+      roleId: Joi.string().uuid().required(),
+    }),
+  }),
+  userController.store,
+);
+
+routes.get(
+  '/users',
+  celebrate({
+    [Segments.QUERY]: Joi.object().keys({
+      page: Joi.number(),
+      limit: Joi.number(),
+    }),
+  }),
+  userController.index,
 );

@@ -58,5 +58,3 @@ export class RolesRepository implements IRolesRepository {
     return this.repository.findOneBy({ id });
   }
 }
-
-export const rolesRepository = new RolesRepository();
