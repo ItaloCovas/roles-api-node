@@ -2,6 +2,8 @@ import 'dotenv/config';
 import 'reflect-metadata';
 import './app/container';
 import 'express-async-errors';
+import path from 'node:path';
+import uploadConfig from './config/upload';
 import express from 'express';
 import cors from 'cors';
 import { errors } from 'celebrate';
@@ -20,6 +22,7 @@ dataSource
 
     app.use(express.json());
     app.use(cors());
+    app.use('/files', express.static(uploadConfig.directory));
     app.use('/docs', swagger.serve, swagger.setup(swaggerFile));
     app.use(routes);
     app.use(errors());

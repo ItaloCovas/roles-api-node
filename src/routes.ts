@@ -1,16 +1,23 @@
 import { Router } from 'express';
 import { container } from 'tsyringe';
 import { celebrate, Joi, Segments } from 'celebrate';
+import multer from 'multer';
+import uploadConfig from './config/upload';
 
 import { RoleController } from './app/controllers/RoleController';
 import { UserController } from './app/controllers/UserController';
 import { LoginController } from './app/controllers/LoginController';
+import { AvatarController } from './app/controllers/AvatarController';
+
 import { authMiddleware } from './middlewares/authMiddleware';
 
 export const routes = Router();
 const roleController = container.resolve(RoleController);
 const userController = container.resolve(UserController);
 const loginController = container.resolve(LoginController);
+const avatarController = container.resolve(AvatarController);
+
+const upload = multer(uploadConfig);
 
 routes.get('/', (request, response) => {
   return response.json({ message: 'Hello World!' });
@@ -111,3 +118,25 @@ routes.get(
   }),
   userController.index,
 );
+
+routes.get('/profile', userController.getUserProfile);
+routes.put(
+  '/profile',
+  celebrate({
+    [Segments.BODY]: Joi.object().keys({
+      name: Joi.string().required(),
+      email: Joi.string().email().required(),
+      password: Joi.string().optional(),
+      oldPassword: Joi.string(),
+      passwordConfirmation: Joi.string()
+        .valid(Joi.ref('password'))
+        .when('password', {
+          is: Joi.exist(),
+          then: Joi.required(),
+        }),
+    }),
+  }),
+  userController.updateUserProfile,
+);
+
+routes.patch('/users/avatar', upload.single('avatar'), avatarController.upload);

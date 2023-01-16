@@ -1,5 +1,5 @@
 import { inject, injectable } from 'tsyringe';
-import { hash } from 'bcrypt';
+import { compare, hash } from 'bcrypt';
 import { User } from '../../entities/User';
 import { BadRequestError, NotFoundError } from '../../helpers/api-errors';
 import { IRolesRepository } from '../../interfaces/roles';
@@ -15,6 +15,18 @@ interface CreateUserDTO {
   password: string;
   isAdmin: boolean;
   roleId: string;
+}
+
+interface ShowProfileParams {
+  userId: string;
+}
+
+interface UpdateProfileDTO {
+  userId: string;
+  name: string;
+  email: string;
+  password?: string;
+  oldPassword?: string;
 }
 
 @injectable()
@@ -34,16 +46,6 @@ export class UsersService {
     const skip = Number((page - 1) * take);
     return this.usersRepository.findAll({ page, skip, take });
   }
-
-  // async getRoleById({ id }: getByIdDTO): Promise<Role | null> {
-  //   const role = await this.rolesRepository.findById(id);
-
-  //   if (!role) {
-  //     throw new NotFoundError('Role not found.');
-  //   }
-
-  //   return role;
-  // }
 
   async createRoleService({
     name,
@@ -76,33 +78,45 @@ export class UsersService {
     return user;
   }
 
-  // async updateRoleService({ name, id }: UpdateRoleDTO): Promise<Role | null> {
-  //   const role = await this.rolesRepository.findById(id);
+  async showProfileService({ userId }: ShowProfileParams): Promise<User> {
+    const user = await this.usersRepository.findById(userId);
 
-  //   if (!role) {
-  //     throw new NotFoundError('Role not found.');
-  //   }
+    if (!user) {
+      throw new NotFoundError('User not found.');
+    }
 
-  //   const roleExists = await this.rolesRepository.findByName(name);
+    return user;
+  }
 
-  //   if (roleExists && role.name !== roleExists.name) {
-  //     throw new BadRequestError('Role already exists.');
-  //   }
+  async updateProfile({
+    userId,
+    name,
+    email,
+    password,
+    oldPassword,
+  }: UpdateProfileDTO): Promise<User> {
+    const user = await this.usersRepository.findById(userId);
 
-  //   role.name = name;
+    if (!user) {
+      throw new NotFoundError('User not found.');
+    }
 
-  //   const updatedRole = await this.rolesRepository.update(role);
+    const userEmail = await this.usersRepository.findByEmail(email);
 
-  //   return updatedRole;
-  // }
+    if (userEmail && userEmail.id !== userId) {
+      throw new BadRequestError('Email already used.');
+    }
 
-  // async deleteRoleService({ id }: DeleteRoleDTO) {
-  //   const role = await this.rolesRepository.findById(id);
+    if (password && oldPassword) {
+      const checkOldPassword = await compare(oldPassword, user.password);
+      if (!checkOldPassword) {
+        throw new BadRequestError('Old password must match.');
+      }
+      user.password = await hash(password, 10);
+    }
 
-  //   if (!role) {
-  //     throw new NotFoundError('Role not found.');
-  //   }
-
-  //   this.rolesRepository.delete(role);
-  // }
+    user.name = name;
+    user.email = email;
+    return this.usersRepository.update(user);
+  }
 }

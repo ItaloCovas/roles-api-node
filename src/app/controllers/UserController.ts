@@ -21,16 +21,6 @@ export class UserController {
     return response.status(200).json(instanceToInstance(users));
   }
 
-  // async getRole(request: Request, response: Response): Promise<Response> {
-  //   const rolesService = container.resolve(RolesService);
-
-  //   const { id } = request.params;
-
-  //   const role = await rolesService.getRoleById({ id });
-
-  //   return response.status(200).json(role);
-  // }
-
   async store(request: Request, response: Response): Promise<Response> {
     const usersService = container.resolve(UsersService);
 
@@ -47,24 +37,37 @@ export class UserController {
     return response.status(201).json(instanceToInstance(newUser));
   }
 
-  // async update(request: Request, response: Response) {
-  //       const usersService = container.resolve(UsersService);
+  async getUserProfile(
+    request: Request,
+    response: Response,
+  ): Promise<Response> {
+    const usersService = container.resolve(UsersService);
 
-  //   const { id } = request.params;
-  //   const { name } = request.body;
+    const userId = request.user.id;
 
-  //   const updatedRole = await rolesService.updateRoleService({ id, name });
+    const user = await usersService.showProfileService({ userId });
 
-  //   return response.status(201).json(updatedRole);
-  // }
+    return response.status(200).json(instanceToInstance(user));
+  }
 
-  // async delete(request: Request, response: Response) {
-  //       const usersService = container.resolve(UsersService);
+  async updateUserProfile(
+    request: Request,
+    response: Response,
+  ): Promise<Response> {
+    const usersService = container.resolve(UsersService);
 
-  //   const { id } = request.params;
+    const userId = request.user.id;
 
-  //   await rolesService.deleteRoleService({ id });
+    const { name, email, password, oldPassword } = request.body;
 
-  //   return response.sendStatus(204);
-  // }
+    const updatedUser = await usersService.updateProfile({
+      userId,
+      name,
+      email,
+      password,
+      oldPassword,
+    });
+
+    return response.status(201).json(instanceToInstance(updatedUser));
+  }
 }

@@ -6,6 +6,7 @@ import { IUsersRepository } from '../../interfaces/users';
 import { UsersRepository } from '../repositories/UsersRepository';
 import { UserController } from '../controllers/UserController';
 import { LoginController } from '../controllers/LoginController';
+import { AvatarController } from '../controllers/AvatarController';
 
 container.registerSingleton<IRolesRepository>(
   'RolesRepository',
@@ -21,3 +22,4 @@ container.registerSingleton<IUsersRepository>(
 
 container.registerSingleton('UserController', UserController);
 container.registerSingleton('LoginController', LoginController);
+container.registerSingleton('AvatarController', AvatarController);
