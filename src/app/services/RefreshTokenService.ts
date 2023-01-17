@@ -1,15 +1,14 @@
 import { inject, injectable } from 'tsyringe';
 import jwtConfig from '../../config/auth';
-import { compare } from 'bcrypt';
 import { User } from '../../entities/User';
 import { NotFoundError, UnauthorizedError } from '../../helpers/api-errors';
 import { IUsersRepository } from '../../interfaces/Users';
-import { Secret, sign } from 'jsonwebtoken';
 import { IRefreshTokenRepository } from '../../interfaces/RefreshToken';
+import { Secret, sign } from 'jsonwebtoken';
 
-interface CreateLoginDTO {
-  email: string;
-  password: string;
+interface CreateAccessAndRefreshTokenDTO {
+  userId: string;
+  refresh_token: string;
 }
 
 interface IResponse {
@@ -19,7 +18,7 @@ interface IResponse {
 }
 
 @injectable()
-export class LoginService {
+export class RefreshTokenService {
   constructor(
     @inject('UsersRepository')
     private usersRepository: IUsersRepository,
@@ -27,21 +26,36 @@ export class LoginService {
     private refreshTokenRepository: IRefreshTokenRepository,
   ) {}
 
-  async createLoginService({
-    email,
-    password,
-  }: CreateLoginDTO): Promise<IResponse> {
-    const user = await this.usersRepository.findByEmail(email);
+  async createRefreshTokenService({
+    userId,
+    refresh_token,
+  }: CreateAccessAndRefreshTokenDTO): Promise<IResponse> {
+    const user = await this.usersRepository.findById(userId);
 
     if (!user) {
-      throw new UnauthorizedError('Incorrect email/password.');
+      throw new NotFoundError('User not found.');
     }
 
-    const passwordConfirm = await compare(password, user.password);
+    const refreshTokenExists = await this.refreshTokenRepository.findByToken(
+      refresh_token,
+    );
 
-    if (!passwordConfirm) {
-      throw new UnauthorizedError('Incorrect email/password.');
+    if (!user) {
+      throw new UnauthorizedError('Refresh token not found.');
     }
+
+    const dateNow = new Date().getTime();
+
+    if (
+      !refreshTokenExists?.isValid ||
+      refreshTokenExists.expires.getTime() < dateNow
+    ) {
+      throw new UnauthorizedError('Refresh is invalid/expired.');
+    }
+
+    await this.refreshTokenRepository.invalidate(refreshTokenExists);
+
+    // Creating new refresh and access tokens
 
     const accessToken = sign({}, jwtConfig.jwt.secret as Secret, {
       subject: user.id,
@@ -49,6 +63,7 @@ export class LoginService {
     });
 
     const expires = new Date(Date.now() + jwtConfig.refreshToken.duration);
+
     const refreshToken = sign({}, jwtConfig.refreshToken.secret as Secret, {
       subject: user.id,
       expiresIn: jwtConfig.refreshToken.expiresIn,

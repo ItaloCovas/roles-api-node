@@ -4,7 +4,7 @@ import { inject, injectable } from 'tsyringe';
 import uploadConfig from '../../config/upload';
 import { User } from '../../entities/User';
 import { UnauthorizedError } from '../../helpers/api-errors';
-import { IUsersRepository } from '../../interfaces/users';
+import { IUsersRepository } from '../../interfaces/Users';
 
 interface UpdateAvatarDTO {
   userId: string;
@@ -18,7 +18,7 @@ export class UpdateAvatarService {
     private usersRepository: IUsersRepository,
   ) {}
 
-  async updateAvatar({
+  async updateAvatarService({
     userId,
     avatarFileName,
   }: UpdateAvatarDTO): Promise<User> {

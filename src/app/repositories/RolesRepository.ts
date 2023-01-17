@@ -4,7 +4,7 @@ import {
   IRolesRepository,
   PaginationParams,
   RolesPaginationProperties,
-} from '../../interfaces/roles/index';
+} from '../../interfaces/Roles/index';
 import { dataSource } from '../../database';
 import { Repository } from 'typeorm';
 

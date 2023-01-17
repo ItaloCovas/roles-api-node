@@ -9,11 +9,14 @@ export class LoginController {
 
     const { email, password } = request.body;
 
-    const { user, token } = await loginService.createLoginService({
-      email,
-      password,
-    });
+    const { user, accessToken, refreshToken } =
+      await loginService.createLoginService({
+        email,
+        password,
+      });
 
-    return response.status(200).json(instanceToInstance({ user, token }));
+    return response
+      .status(200)
+      .json(instanceToInstance({ user, accessToken, refreshToken }));
   }
 }

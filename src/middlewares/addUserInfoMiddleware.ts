@@ -1,12 +1,12 @@
 import { NextFunction, Request, Response } from 'express';
-import { Secret, verify } from 'jsonwebtoken';
+import { decode, Secret, verify } from 'jsonwebtoken';
 import { UnauthorizedError } from '../helpers/api-errors';
 
 interface JwtPayload {
   sub: string;
 }
 
-export const authMiddleware = (
+export const addUserInfoMiddleware = (
   request: Request,
   response: Response,
   next: NextFunction,
@@ -32,15 +32,15 @@ export const authMiddleware = (
   }
 
   try {
-    const decodedToken = verify(token, process.env.JWT_SECRET as Secret);
+    const decodedToken = decode(token);
     const { sub } = decodedToken as JwtPayload;
     request.user = { id: sub };
     return next();
   } catch (err) {
     return response.status(401).json({
       error: true,
-      code: 'token.expired',
-      message: 'Access token is expired.',
+      code: 'token.invalid',
+      message: 'Access token is invalid.',
     });
   }
 };

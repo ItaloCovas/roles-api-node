@@ -2,7 +2,6 @@ import 'dotenv/config';
 import 'reflect-metadata';
 import './app/container';
 import 'express-async-errors';
-import path from 'node:path';
 import uploadConfig from './config/upload';
 import express from 'express';
 import cors from 'cors';
@@ -11,7 +10,7 @@ import swagger from 'swagger-ui-express';
 
 import swaggerFile from './swagger.json';
 import { routes } from './routes';
-import { errorMiddleware } from './middlewares/error';
+import { errorMiddleware } from './middlewares/errorMiddleware';
 import { dataSource } from './database';
 
 dataSource

@@ -6,7 +6,7 @@ import {
   IUsersRepository,
   PaginationParams,
   UsersPaginationProperties,
-} from '../../interfaces/users';
+} from '../../interfaces/Users';
 
 export class UsersRepository implements IUsersRepository {
   private repository: Repository<User>;

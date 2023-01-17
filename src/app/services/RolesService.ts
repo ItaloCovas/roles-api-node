@@ -9,7 +9,7 @@ import {
   IRolesRepository,
   RolesPaginationProperties,
   UpdateRoleDTO,
-} from '../../interfaces/roles';
+} from '../../interfaces/Roles';
 
 @injectable()
 export class RolesService {

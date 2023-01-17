@@ -2,12 +2,12 @@ import { inject, injectable } from 'tsyringe';
 import { compare, hash } from 'bcrypt';
 import { User } from '../../entities/User';
 import { BadRequestError, NotFoundError } from '../../helpers/api-errors';
-import { IRolesRepository } from '../../interfaces/roles';
+import { IRolesRepository } from '../../interfaces/Roles';
 import {
   GetUsersServiceParams,
   IUsersRepository,
   UsersPaginationProperties,
-} from '../../interfaces/users';
+} from '../../interfaces/Users';
 
 interface CreateUserDTO {
   name: string;
@@ -88,7 +88,7 @@ export class UsersService {
     return user;
   }
 
-  async updateProfile({
+  async updateProfileService({
     userId,
     name,
     email,

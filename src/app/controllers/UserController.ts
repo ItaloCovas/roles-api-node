@@ -60,7 +60,7 @@ export class UserController {
 
     const { name, email, password, oldPassword } = request.body;
 
-    const updatedUser = await usersService.updateProfile({
+    const updatedUser = await usersService.updateProfileService({
       userId,
       name,
       email,

@@ -10,12 +10,15 @@ import { LoginController } from './app/controllers/LoginController';
 import { AvatarController } from './app/controllers/AvatarController';
 
 import { authMiddleware } from './middlewares/authMiddleware';
+import { RefreshTokenController } from './app/controllers/RefreshTokenController';
+import { addUserInfoMiddleware } from './middlewares/addUserInfoMiddleware';
 
 export const routes = Router();
 const roleController = container.resolve(RoleController);
 const userController = container.resolve(UserController);
 const loginController = container.resolve(LoginController);
 const avatarController = container.resolve(AvatarController);
+const refreshTokenController = container.resolve(RefreshTokenController);
 
 const upload = multer(uploadConfig);
 
@@ -34,6 +37,17 @@ routes.post(
     }),
   }),
   loginController.login,
+);
+
+routes.post(
+  '/users/refresh_token',
+  addUserInfoMiddleware,
+  celebrate({
+    [Segments.BODY]: Joi.object().keys({
+      refresh_token: Joi.string().required(),
+    }),
+  }),
+  refreshTokenController.create,
 );
 
 routes.use(authMiddleware);
